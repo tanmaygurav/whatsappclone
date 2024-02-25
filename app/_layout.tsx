@@ -47,6 +47,13 @@ function RootLayoutNav() {
           headerBackVisible: false,
         }}
       />
+      <Stack.Screen
+        name="verify/[phone]"
+        options={{
+          headerTitle: "Verify your Phone Number",
+          headerBackTitle:"Edit number"
+        }}
+      />
     </Stack>
   );
 }
