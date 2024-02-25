@@ -1,11 +1,11 @@
-import { View, Text, StyleSheet, Image, TouchableOpacity, Linking } from 'react-native'
+import { View, Text, StyleSheet, Image, TouchableOpacity, Linking, Pressable } from 'react-native'
 import React from 'react'
 
-import welcomeImage from "@/assets/images/welcome.png";
+import welcomeImage from "../assets/images/welcome.png";
 import Colors from '@/constants/Colors';
 import { Link } from 'expo-router';
 
-const welcome_image = Image.resolveAssetSource(welcomeImage).uri;
+// const welcome_image = Image.resolveAssetSource(welcomeImage).uri;
 
 const Page = () => {
 
@@ -15,7 +15,7 @@ const Page = () => {
 
     return (
         <View style={styles.container}>
-            <Image source={{ uri: welcome_image }} style={styles.welcome} />
+            <Image source={welcomeImage} style={styles.welcome} />
             <Text style={styles.headline}>Welcome to WhatsApp Clone</Text>
             <Text style={styles.description}>
                 Read our{' '}
@@ -29,11 +29,11 @@ const Page = () => {
                 .
             </Text>
             <Link href={"/otp"} replace asChild>
-                <TouchableOpacity style={styles.button}>
+                <Pressable style={styles.button}>
                     <Text style={styles.buttonText}>
                         Agree & Continue
                     </Text>
-                </TouchableOpacity>
+                </Pressable>
             </Link>
         </View>
     )
@@ -47,7 +47,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff'
     },
     welcome: {
-        width: '100%',
+        maxWidth: 300,
+        // width: '100%',
         height: 300,
         marginBottom: 80,
     },

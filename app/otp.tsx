@@ -8,6 +8,7 @@ import {
     StyleSheet,
     TouchableOpacity,
     ActivityIndicator,
+    Alert,
 } from "react-native";
 import React from "react";
 import { useRouter } from "expo-router";
@@ -15,6 +16,7 @@ import Colors from "@/constants/Colors";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import MaskInput from 'react-native-mask-input';
+import { isClerkAPIResponseError, useSignIn, useSignUp } from "@clerk/clerk-expo";
 
 const Page = () => {
     const [loading, setLoading] = useState(false);
@@ -23,6 +25,8 @@ const Page = () => {
     const keyboardVerticalOffset = Platform.OS === "ios" ? 90 : 0;
 
     const { bottom } = useSafeAreaInsets();
+    const { signUp, setActive } = useSignUp();
+    const { signIn, } = useSignIn();
 
     const openLink = () => {
         Linking.openURL("https://www.wikipedia.org/");
@@ -30,15 +34,49 @@ const Page = () => {
 
     const sendOTP = async () => {
         setLoading(true)
-        setTimeout(() => {
+        try {
+            await signUp!.create({
+                phoneNumber
+            });
+            signUp!.preparePhoneNumberVerification();
             router.push(`/verify/${phoneNumber}`);
-        }, 200);
+
+        } catch (err) {
+            console.log(err);
+            if (isClerkAPIResponseError(err)) {
+                if (err.errors[0].code === 'form_identifier_exists') {
+                    console.log('user exists');
+                    await trySignIn();
+                } else {
+                    setLoading(false);
+                    Alert.alert('Error', err.errors[0].message)
+                }
+            }
+        }
     };
 
-    const trySignIn = async () => { };
+    const trySignIn = async () => {
+        const { supportedFirstFactors } = await signIn!.create({
+            identifier: phoneNumber,
+        });
+
+        const firstPhoneFactor: any = supportedFirstFactors.find((factor: any) => {
+            return factor.strategy === 'phone_code'
+        });
+
+        const { phoneNumberId } = firstPhoneFactor;
+
+        await signIn!.prepareFirstFactor({
+            strategy: 'phone_code',
+            phoneNumberId,
+        });
+
+        router.push(`/verify/${phoneNumber}?signin=true`);
+        setLoading(false);
+    };
 
     return (
-        <KeyboardAvoidingView style={{ flex: 1 }}>
+        <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={keyboardVerticalOffset} style={{ flex: 1 }}>
             <View style={styles.container}>
                 {loading && (
                     <View style={[StyleSheet.absoluteFill, styles.loading]}>
